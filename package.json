@@ -1,0 +1,23 @@
+{
+  "name": "aprendendo-nodejs",
+  "version": "1.0.0",
+  "description": "Crescendo e Evoluindo utilizando NodeJS para construir aplicações backend escaláveis e de alta performance",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Joseph-VTs/Aprendendo-NodeJS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Joseph-VTs/Aprendendo-NodeJS/issues"
+  },
+  "homepage": "https://github.com/Joseph-VTs/Aprendendo-NodeJS#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
