@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Minha Lista de Tarefas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-app">
+            <h1>To-Do Node</h1>
+            <button id="btnSair" title="Sair da conta">Sair 🚪</button>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="inputTarefa" placeholder="O que precisa fazer?">
+            <button id="btnAdicionar">Adicionar</button>
+        </div>
+
+        <ul id="lista">
+        </ul>
+    </div>
+
+    <div id="modalLogin" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modalTitulo">Acessar Minha Lista</h2>
+
+            <input type="email" id="loginEmail" placeholder="E-mail">
+            <input type="password" id="loginSenha" placeholder="Senha">
+
+            <div class="modal-botoes">
+                <button id="btnEntrar">Entrar</button>
+                <button id="btnRegistrar">Criar Conta</button>
+            </div>
+
+            <p id="modalTroca">Não tem conta? <span>Cadastre-se</span></p>
+        </div>
+    </div>
+
+    <!-- Para o navegador aceitar que um arquivo "chame" o outro, precisamos mudar uma coisinha, colocar o type como module -->
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>
+
+
+
+
+
+<!-- Qual o próximo passo que você quer dar?
+- Fazer o "risquinho" de Tarefa Concluída (Update) funcionar no clique?
+- Ou quer que eu te explique como poderíamos começar a levar essa lógica para o React Native para rodar no seu celular? -->
