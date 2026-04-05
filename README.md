@@ -12,3 +12,10 @@ Node.js é usado principalmente para construir aplicações backend escaláveis 
 npm init -y
 npm install express
 npm install sqlite3 sqlite
+npm intall cors (Por segurança, o Node.js bloqueia pedidos que venham de outros lugares (como um arquivo HTML abrindo no seu navegador))
+
+
+### Segurança - Login
+- Bcrypt: Para nunca salvar a senha real no banco (apenas um código secreto).
+- JWT (JSON Web Token): Para dar um "crachá de acesso" ao usuário após o login.
+npm install bcrypt jsonwebtoken
