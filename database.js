@@ -7,19 +7,24 @@ const pool = new Pool({
 
 async function criarBanco() {
   try {
-    // Usamos o pool.query direto. Ele abre e fecha a conexão sozinho.
     await pool.query(`CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, email TEXT UNIQUE NOT NULL, senha TEXT NOT NULL);`);
     await pool.query(`CREATE TABLE IF NOT EXISTS tarefas (id SERIAL PRIMARY KEY, texto TEXT NOT NULL, concluida INTEGER DEFAULT 0, user_id INTEGER REFERENCES usuarios(id));`);
     
-    console.log("✅ Banco PostgreSQL no Neon Conectado!");
+    console.log("✅ Tabelas prontas no Neon!");
+
+    // FUNÇÃO AUXILIAR DE TRADUÇÃO (O segredo do Arquiteto)
+    const traduzirSQL = (sql) => {
+      let i = 0;
+      return sql.replace(/\?/g, () => `$${++i}`);
+    };
 
     return {
-      get: (sql, params) => pool.query(sql.replace(/\?/g, (_, i) => `$${i + 1}`), params).then(res => res.rows[0]),
-      all: (sql, params) => pool.query(sql.replace(/\?/g, (_, i) => `$${i + 1}`), params).then(res => res.rows),
-      run: (sql, params) => pool.query(sql.replace(/\?/g, (_, i) => `$${i + 1}`), params)
+      get: (sql, params) => pool.query(traduzirSQL(sql), params).then(res => res.rows[0]),
+      all: (sql, params) => pool.query(traduzirSQL(sql), params).then(res => res.rows),
+      run: (sql, params) => pool.query(traduzirSQL(sql), params)
     };
   } catch (err) {
-    console.error("❌ Erro fatal no banco:", err);
+    console.error("❌ Erro no banco:", err);
     throw err;
   }
 }
