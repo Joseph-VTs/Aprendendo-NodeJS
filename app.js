@@ -14,6 +14,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.get('/', (req, res) => {
+    res.send('🚀 A API está viva e funcionando no Render!');
+});
+
 async function iniciar() {
     const db = await criarBanco();
 
