@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 🚨 IMPORTANTE: Substitua pela URL que o Render vai te dar (ex: https://meu-todo.onrender.com)
-const BASE_URL = 'https://meu-backend-todo.onrender.com/'; 
+const BASE_URL = 'https://meu-backend-todo.onrender.com'; 
 
 const obterHeaders = async () => {
     // No celular o acesso ao crachá (token) é assíncrono
@@ -14,6 +14,7 @@ const obterHeaders = async () => {
 
 // --- AUTENTICAÇÃO ---
 export async function fazerLogin(email, senha) {
+    console.log("Chamando URL:", `${BASE_URL}/login`); // Adicione isso para debugar
     return await fetch(`${BASE_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
