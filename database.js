@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 
+// O Pool gerencia as conexões automaticamente
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -8,8 +9,8 @@ const pool = new Pool({
 });
 
 async function criarBanco() {
-  // 1. Criamos as tabelas usando o pool diretamente (mais seguro)
   try {
+    // Usamos o pool.query diretamente para garantir que a conexão nunca "tranque"
     await pool.query(`
       CREATE TABLE IF NOT EXISTS usuarios (
         id SERIAL PRIMARY KEY,
@@ -27,16 +28,17 @@ async function criarBanco() {
       );
     `);
     
-    console.log("✅ Tabelas verificadas/criadas no Neon!");
+    console.log("✅ Banco PostgreSQL no Neon Conectado e Tabelas Prontas!");
 
-    // 2. Retornamos as funções usando pool.query para que a conexão nunca "feche"
+    // Retornamos as funções usando o pool direto. 
+    // Ele é inteligente: abre a conexão, faz a busca e libera sozinho.
     return {
       get: (sql, params) => pool.query(sql.replace(/\?/g, (_, i) => `$${i + 1}`), params).then(res => res.rows[0]),
       all: (sql, params) => pool.query(sql.replace(/\?/g, (_, i) => `$${i + 1}`), params).then(res => res.rows),
       run: (sql, params) => pool.query(sql.replace(/\?/g, (_, i) => `$${i + 1}`), params)
     };
   } catch (err) {
-    console.error("❌ Erro ao inicializar o banco:", err);
+    console.error("❌ Erro ao conectar ao banco:", err);
     throw err;
   }
 }
