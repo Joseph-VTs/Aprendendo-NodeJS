@@ -1,12 +1,17 @@
 script.js
-
-# Importante
-node_modules/
 database.sqlite
+
+# Pastas pesadas (serão recriadas pelo npm install no servidor)
+node_modules/
+
+# Arquivos de segredos (configurados manualmente no Render)
 .env
+Acesso_Render.md
+Acesso_Postgress.env
+
+# Arquivos locais de banco de dados (agora usamos o Neon na nuvem)
+database.sqlite
+
+# Pastas de build/expo
 .expo/
 dist/
-
-
-
-Acesso_Render.md
