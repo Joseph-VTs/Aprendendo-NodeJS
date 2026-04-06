@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 🚨 IMPORTANTE: Substitua pela URL que o Render vai te dar (ex: https://meu-todo.onrender.com)
-const BASE_URL = 'https://seu-nome-no-render.onrender.com'; 
+const BASE_URL = 'https://meu-backend-todo.onrender.com'; 
 
 const obterHeaders = async () => {
     // No celular o acesso ao crachá (token) é assíncrono
