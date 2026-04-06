@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 🚨 LEMBRETE: Toda vez que você mudar de Wi-Fi, confira se esse IP continua igual!
-const BASE_URL = 'http://192.168.42.68:3000'; 
+const BASE_URL = 'https://meu-backend-todo.onrender.com'; 
 
 // 🛡️ Função auxiliar para buscar o Token no celular
 const obterHeaders = async () => {
