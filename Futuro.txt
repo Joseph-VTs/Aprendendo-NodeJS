@@ -1,0 +1,2 @@
+o que você acha de darmos o próximo passo rumo ao Sênior e começarmos a transformar essa lógica para o React Native, 
+para que você possa instalar esse app de verdade no seu celular?

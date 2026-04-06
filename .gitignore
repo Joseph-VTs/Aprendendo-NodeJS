@@ -1,9 +1,20 @@
-api.js
+# api.js
 app.js
+api.js
 auth.js
 database.js
-database.sqlite
 script.js
-node_modules/
 package-lock.json
 package.json
+
+
+# Importante
+node_modules/
+database.sqlite
+.env
+.expo/
+dist/
+
+
+
+Acesso_Render.md
