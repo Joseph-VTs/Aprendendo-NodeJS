@@ -5,7 +5,6 @@ const { criarBanco } = require('./database.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// Carrega .env apenas se não estiver em produção
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
@@ -23,24 +22,30 @@ async function iniciar() {
 
     // --- ROTAS PÚBLICAS ---
     app.post('/registrar', async (req, res) => {
-        const { email, senha } = req.body;
+        // Agora recebemos o NOME também
+        const { nome, email, senha } = req.body;
         try {
             const hash = await bcrypt.hash(senha, 10);
-            await db.run('INSERT INTO usuarios (email, senha) VALUES (?, ?)', [email, hash]);
+            // Inserindo o nome na nova coluna do banco
+            await db.run('INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)', [nome, email, hash]);
             res.status(201).json({ mensagem: "Usuário criado!" });
         } catch (erro) {
-            res.status(400).json({ erro: "E-mail já cadastrado." });
+            res.status(400).json({ erro: "E-mail já cadastrado ou dados inválidos." });
         }
     });
 
     app.post('/login', async (req, res) => {
         const { email, senha } = req.body;
         const usuario = await db.get('SELECT * FROM usuarios WHERE email = ?', [email]);
+        
         if (!usuario || !(await bcrypt.compare(senha, usuario.senha))) {
             return res.status(401).json({ erro: "Dados incorretos." });
         }
+        
         const token = jwt.sign({ userId: usuario.id }, SECRET, { expiresIn: '2h' });
-        res.json({ token });
+        
+        // Retornamos o TOKEN e o NOME para o app personalizar a tela
+        res.json({ token, nome: usuario.nome });
     });
 
     // --- ROTAS PROTEGIDAS ---
@@ -68,7 +73,6 @@ async function iniciar() {
         res.json({ mensagem: "Excluído!" });
     });
 
-    // Porta dinâmica para o Render (0.0.0.0 é obrigatório para ser acessível externamente)
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 API Online na porta ${PORT}`);

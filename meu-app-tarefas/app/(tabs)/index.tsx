@@ -21,6 +21,8 @@ export default function App() {
   const [tarefas, setTarefas] = useState([]);
   
   // Estados de Autenticação
+  const [nome, setNome] = useState(''); // Novo campo para registro
+  const [nomeUsuario, setNomeUsuario] = useState('Usuário'); // Nome exibido no topo
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [modoLogin, setModoLogin] = useState(true);
@@ -31,40 +33,40 @@ export default function App() {
   const [tarefaParaEditar, setTarefaParaEditar] = useState(null);
   const [textoEdicao, setTextoEdicao] = useState('');
 
-  // Roda assim que o app "abre"
   useEffect(() => {
     verificarAcesso();
   }, []);
 
-  // 🛡️ Lógica de Segurança: Persistência de Login
+  // 🛡️ Lógica de Segurança: Recupera Token e Nome
   async function verificarAcesso() {
     try {
-      // Tenta buscar o token guardado no celular
       const token = await AsyncStorage.getItem('token');
+      const nomeSalvo = await AsyncStorage.getItem('userNome');
 
       if (token) {
-        // Se encontrou, entra direto
         setLogado(true);
+        if (nomeSalvo) setNomeUsuario(nomeSalvo);
         await carregarDados();
       }
     } catch (err) {
       console.log("Erro ao recuperar sessão:", err);
     } finally {
-      // Para o reloginho e mostra a tela correta (Login ou Tarefas)
       setCarregando(false);
     }
   }
 
-  // 🚪 Função para Sair e Limpar o Token
   async function handleLogout() {
     Alert.alert("Encerrar Sessão", "Deseja realmente sair?", [
       { text: "Cancelar", style: "cancel" },
       { 
         text: "Sair", 
         onPress: async () => {
-          await AsyncStorage.removeItem('token'); // Limpa o cofre
+          // Limpa tudo do cofre
+          await AsyncStorage.multiRemove(['token', 'userNome']); 
           setLogado(false);
-          setTarefas([]); // Limpa a lista da memória
+          setTarefas([]);
+          setNomeUsuario('Usuário');
+          setNome('');
           setEmail('');
           setSenha('');
         },
@@ -73,7 +75,7 @@ export default function App() {
     ]);
   }
 
-  // --- FUNÇÕES DE DADOS ---
+  // --- DADOS ---
 
   async function carregarDados() {
     try {
@@ -81,8 +83,7 @@ export default function App() {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setTarefas(dados);
     } catch (err) {
-      // Se der erro de token inválido, desloga por segurança
-      await AsyncStorage.removeItem('token');
+      await AsyncStorage.multiRemove(['token', 'userNome']);
       setLogado(false);
     }
   }
@@ -151,6 +152,17 @@ export default function App() {
         <Text style={styles.tituloApp}>To-Do Cloud 🚀</Text>
         <View style={styles.cardLogin}>
           <Text style={styles.label}>{modoLogin ? 'Acesse sua conta' : 'Crie seu perfil'}</Text>
+          
+          {/* Campo NOME: Só aparece no modo Cadastro */}
+          {!modoLogin && (
+            <TextInput 
+              style={styles.input} 
+              placeholder="Seu nome completo" 
+              value={nome} 
+              onChangeText={setNome} 
+            />
+          )}
+
           <TextInput 
             style={styles.input} 
             placeholder="E-mail" 
@@ -166,27 +178,35 @@ export default function App() {
             onChangeText={setSenha} 
             secureTextEntry 
           />
+          
           <TouchableOpacity 
             style={styles.botaoPrincipal} 
             onPress={async () => {
-              const res = modoLogin ? await fazerLogin(email, senha) : await cadastrarUsuario(email, senha);
+              // Agora enviamos o NOME no cadastro
+              const res = modoLogin 
+                ? await fazerLogin(email, senha) 
+                : await cadastrarUsuario(nome, email, senha);
+
               if (res.ok) {
                 if (!modoLogin) { 
-                  Alert.alert("Sucesso", "Conta criada! Faça login."); 
+                  Alert.alert("Sucesso", "Conta criada! Agora faça seu login."); 
                   setModoLogin(true); 
                 } else { 
                   const d = await res.json(); 
-                  await AsyncStorage.setItem('token', d.token); // SALVA NO COFRE
+                  await AsyncStorage.setItem('token', d.token);
+                  await AsyncStorage.setItem('userNome', d.nome); // SALVA NOME DO BACKEND
+                  setNomeUsuario(d.nome);
                   setLogado(true); 
                   carregarDados(); 
                 }
               } else { 
-                Alert.alert("Erro", "Verifique seus dados de acesso."); 
+                Alert.alert("Erro", "Verifique seus dados ou se o e-mail já existe."); 
               }
             }}
           >
             <Text style={styles.botaoTexto}>{modoLogin ? 'ENTRAR' : 'CADASTRAR'}</Text>
           </TouchableOpacity>
+
           <TouchableOpacity style={{ marginTop: 20 }} onPress={() => setModoLogin(!modoLogin)}>
             <Text style={{ color: '#4F46E5', textAlign: 'center', fontWeight: '500' }}>
               {modoLogin ? 'Ainda não tem conta? Clique aqui' : 'Já tenho conta, quero entrar'}
@@ -202,7 +222,8 @@ export default function App() {
       <View style={styles.header}>
         <View>
           <Text style={styles.tituloApp}>Minhas Tarefas</Text>
-          <Text style={{ color: '#64748b' }}>Organize seu dia, Tali</Text>
+          {/* Nome Dinâmico no Topo! */}
+          <Text style={{ color: '#64748b' }}>Organize seu dia, {nomeUsuario}</Text>
         </View>
         <TouchableOpacity onPress={handleLogout} style={styles.btnSair}>
           <Text style={{ color: '#ef4444', fontWeight: 'bold' }}>Sair</Text>
