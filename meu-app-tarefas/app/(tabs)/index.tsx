@@ -19,31 +19,61 @@ export default function App() {
   const [logado, setLogado] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [tarefas, setTarefas] = useState([]);
+  
+  // Estados de Autenticação
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [novaTarefa, setNovaTarefa] = useState('');
   const [modoLogin, setModoLogin] = useState(true);
+
+  // Estados de Tarefas
+  const [novaTarefa, setNovaTarefa] = useState('');
   const [modalEditarVisivel, setModalEditarVisivel] = useState(false);
   const [tarefaParaEditar, setTarefaParaEditar] = useState(null);
   const [textoEdicao, setTextoEdicao] = useState('');
 
+  // Roda assim que o app "abre"
   useEffect(() => {
     verificarAcesso();
   }, []);
 
+  // 🛡️ Lógica de Segurança: Persistência de Login
   async function verificarAcesso() {
     try {
+      // Tenta buscar o token guardado no celular
       const token = await AsyncStorage.getItem('token');
+
       if (token) {
+        // Se encontrou, entra direto
         setLogado(true);
         await carregarDados();
       }
     } catch (err) {
-      console.log("Erro de acesso:", err);
+      console.log("Erro ao recuperar sessão:", err);
     } finally {
+      // Para o reloginho e mostra a tela correta (Login ou Tarefas)
       setCarregando(false);
     }
   }
+
+  // 🚪 Função para Sair e Limpar o Token
+  async function handleLogout() {
+    Alert.alert("Encerrar Sessão", "Deseja realmente sair?", [
+      { text: "Cancelar", style: "cancel" },
+      { 
+        text: "Sair", 
+        onPress: async () => {
+          await AsyncStorage.removeItem('token'); // Limpa o cofre
+          setLogado(false);
+          setTarefas([]); // Limpa a lista da memória
+          setEmail('');
+          setSenha('');
+        },
+        style: "destructive"
+      }
+    ]);
+  }
+
+  // --- FUNÇÕES DE DADOS ---
 
   async function carregarDados() {
     try {
@@ -51,6 +81,7 @@ export default function App() {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setTarefas(dados);
     } catch (err) {
+      // Se der erro de token inválido, desloga por segurança
       await AsyncStorage.removeItem('token');
       setLogado(false);
     }
@@ -101,7 +132,9 @@ export default function App() {
     setModalEditarVisivel(true);
   }
 
-  if (carregando && !logado) {
+  // --- RENDERS ---
+
+  if (carregando) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#4F46E5" />
@@ -114,34 +147,64 @@ export default function App() {
 
   if (!logado) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <Text style={styles.tituloApp}>To-Do Cloud 🚀</Text>
         <View style={styles.cardLogin}>
           <Text style={styles.label}>{modoLogin ? 'Acesse sua conta' : 'Crie seu perfil'}</Text>
-          <TextInput style={styles.input} placeholder="E-mail" value={email} onChangeText={setEmail} autoCapitalize="none" />
-          <TextInput style={styles.input} placeholder="Senha" value={senha} onChangeText={setSenha} secureTextEntry />
-          <TouchableOpacity style={styles.botaoPrincipal} onPress={async () => {
+          <TextInput 
+            style={styles.input} 
+            placeholder="E-mail" 
+            value={email} 
+            onChangeText={setEmail} 
+            autoCapitalize="none" 
+            keyboardType="email-address"
+          />
+          <TextInput 
+            style={styles.input} 
+            placeholder="Senha" 
+            value={senha} 
+            onChangeText={setSenha} 
+            secureTextEntry 
+          />
+          <TouchableOpacity 
+            style={styles.botaoPrincipal} 
+            onPress={async () => {
               const res = modoLogin ? await fazerLogin(email, senha) : await cadastrarUsuario(email, senha);
               if (res.ok) {
-                if (!modoLogin) { Alert.alert("Sucesso", "Conta criada! Faça login."); setModoLogin(true); }
-                else { const d = await res.json(); await AsyncStorage.setItem('token', d.token); setLogado(true); carregarDados(); }
-              } else { Alert.alert("Erro", "Verifique os dados."); }
-          }}>
+                if (!modoLogin) { 
+                  Alert.alert("Sucesso", "Conta criada! Faça login."); 
+                  setModoLogin(true); 
+                } else { 
+                  const d = await res.json(); 
+                  await AsyncStorage.setItem('token', d.token); // SALVA NO COFRE
+                  setLogado(true); 
+                  carregarDados(); 
+                }
+              } else { 
+                Alert.alert("Erro", "Verifique seus dados de acesso."); 
+              }
+            }}
+          >
             <Text style={styles.botaoTexto}>{modoLogin ? 'ENTRAR' : 'CADASTRAR'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{marginTop: 15}} onPress={() => setModoLogin(!modoLogin)}>
-            <Text style={{color: '#4F46E5', textAlign: 'center'}}>{modoLogin ? 'Criar uma conta' : 'Já tenho conta'}</Text>
+          <TouchableOpacity style={{ marginTop: 20 }} onPress={() => setModoLogin(!modoLogin)}>
+            <Text style={{ color: '#4F46E5', textAlign: 'center', fontWeight: '500' }}>
+              {modoLogin ? 'Ainda não tem conta? Clique aqui' : 'Já tenho conta, quero entrar'}
+            </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.tituloApp}>Minhas Tarefas</Text>
-        <TouchableOpacity onPress={async () => { await AsyncStorage.removeItem('token'); setLogado(false); }}>
+        <View>
+          <Text style={styles.tituloApp}>Minhas Tarefas</Text>
+          <Text style={{ color: '#64748b' }}>Organize seu dia, Tali</Text>
+        </View>
+        <TouchableOpacity onPress={handleLogout} style={styles.btnSair}>
           <Text style={{ color: '#ef4444', fontWeight: 'bold' }}>Sair</Text>
         </TouchableOpacity>
       </View>
@@ -161,6 +224,8 @@ export default function App() {
       <FlatList
         data={tarefas}
         keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
         renderItem={({ item }) => (
           <View style={styles.itemTarefa}>
             <TouchableOpacity style={{ flex: 1 }} onPress={() => handleToggle(item)}>
@@ -199,8 +264,9 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc', paddingHorizontal: 20, paddingTop: 50 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8fafc' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 25 },
   tituloApp: { fontSize: 28, fontWeight: 'bold', color: '#1e293b' },
+  btnSair: { padding: 8, backgroundColor: '#fee2e2', borderRadius: 8 },
   label: { fontSize: 16, fontWeight: '600', marginBottom: 15, color: '#475569' },
   cardLogin: { backgroundColor: '#fff', padding: 25, borderRadius: 24, elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
   input: { backgroundColor: '#f1f5f9', padding: 16, borderRadius: 16, fontSize: 16, marginBottom: 15, borderColor: '#e2e8f0', borderWidth: 1 },
