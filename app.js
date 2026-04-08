@@ -37,14 +37,19 @@ async function iniciar() {
     app.post('/login', async (req, res) => {
         const { email, senha } = req.body;
         const usuario = await db.get('SELECT * FROM usuarios WHERE email = ?', [email]);
-        
-        if (!usuario || !(await bcrypt.compare(senha, usuario.senha))) {
-            return res.status(401).json({ erro: "Dados incorretos." });
+
+        // 1. Verifica se o usuário existe
+        if (!usuario) {
+            return res.status(404).json({ erro: "E-mail não cadastrado." });
         }
-        
-        const token = jwt.sign({ userId: usuario.id }, SECRET, { expiresIn: '2h' });
-        
-        // Retornamos o TOKEN e o NOME para o app personalizar a tela
+
+        // 2. Verifica se a senha está correta
+        const senhaValida = await bcrypt.compare(senha, usuario.senha);
+        if (!senhaValida) {
+            return res.status(401).json({ erro: "Senha incorreta. Tente novamente." });
+        }
+
+        const token = jwt.sign({ userId: usuario.id }, SECRET, { expiresIn: '24h' });
         res.json({ token, nome: usuario.nome });
     });
 
