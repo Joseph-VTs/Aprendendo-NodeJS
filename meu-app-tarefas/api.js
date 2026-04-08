@@ -22,11 +22,11 @@ export async function fazerLogin(email, senha) {
     });
 }
 
-export async function cadastrarUsuario(email, senha) {
+export async function cadastrarUsuario(nome, email, senha) {
     return await fetch(`${BASE_URL}/registrar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha })
+        body: JSON.stringify({ nome, email, senha })
     });
 }
 
